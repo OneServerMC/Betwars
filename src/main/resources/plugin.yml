@@ -5,3 +5,7 @@ api-version: 1.17
 authors: [ M1n1don ]
 description: ベットウォーズのプラグイン
 website: https://github.com/OneServerMC/Betwars
+
+commands:
+  betwars:
+    description: ベットウォーズの基礎コマンド
