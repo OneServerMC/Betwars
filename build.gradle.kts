@@ -1,14 +1,10 @@
 import org.apache.tools.ant.filters.ReplaceTokens
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
-    application
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
-
-group = "io.github.oneserver"
-version = "0.1.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     // Maven Central
@@ -21,22 +17,9 @@ repositories {
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
-    }
-}
-
-tasks.processResources {
-    filteringCharset = "UTF-8"
-    from(sourceSets["main"].resources.srcDirs) {
-        include("**/*.yml")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        filter<ReplaceTokens>("tokens" to mapOf("version" to project.version))
-        filter<ReplaceTokens>("tokens" to mapOf("name" to project.name))
-    }
-}
+group = "io.github.oneserver"
+version = "0.1.0"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -45,4 +28,30 @@ dependencies {
     implementation("com.github.M1n1don:SmartInvsR:1.1")
 
     compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+}
+
+tasks {
+    named<ShadowJar>("shadowJar") {
+        archiveFileName.set("Betwars-${project.version}.jar")
+        mergeServiceFiles()
+        manifest {
+            attributes(mapOf("Main-Class" to "io.github.oneservermc.betwars.Betwars"))
+        }
+    }
+
+    processResources {
+        filteringCharset = "UTF-8"
+        from(sourceSets["main"].resources.srcDirs) {
+            include("**/*.yml")
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            filter<ReplaceTokens>("tokens" to mapOf("version" to project.version))
+            filter<ReplaceTokens>("tokens" to mapOf("name" to project.name))
+        }
+    }
+}
+
+tasks {
+    build {
+        dependsOn(shadowJar)
+    }
 }
